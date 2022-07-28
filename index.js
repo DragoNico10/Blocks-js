@@ -1,20 +1,15 @@
-var ball, edges, paddle, canvas, cpuMode
+var edges, paddle, canvas, cpuMode
 var blocksleft=0
 var rows=[]
 var powerupSprites=[]
+var balls=[]
 var gameState=0
 var speedMultiplier=1
 
 function setup(){
     cpuMode= createCheckbox('Enable CPU mode', false);
     canvas=createCanvas(700, 700)
-    ball=createSprite(200, height-40,10, 15)
-    ball.draw=()=>{
-        push()
-        fill(255)
-        ellipse(0, 0, 15)
-        pop()
-    }
+    balls.push(createBall(200, height-40))
     paddle=createSprite(200, height, 100, 40)
     paddle.draw=()=>{
         push()
@@ -22,7 +17,6 @@ function setup(){
         rect(0, 0, 100, 40)
         pop()
     }
-    ball.setCollider("circle", 0, 0, 20)
     edges=createEdgeSprites()
     for(let y=100; y<=300; y+=40){
     rows.push(createBlockSprites(y, 50, 25))
@@ -33,7 +27,8 @@ function setup(){
 function draw(){
     clear()
     background(75)
-    if(cpuMode.checked()){
+    //WIP
+    /*if(cpuMode.checked()){
         if(gameState==0){
             startGame()
         }
@@ -43,40 +38,45 @@ function draw(){
         if(paddle.x<ball.x){
             paddle.x+=5*speedMultiplier
         }
-    }
+    }*/
     if(gameState==0){
-        ball.x=paddle.x
+        balls[0].x=paddle.x
     }
     if(ball.y>height+10){
         gameState=2
-        location.reload()
     }
-    if(blocksleft===0){
+    //Unused
+    /*if(blocksleft===0){
         location.reload()
-    }
-    ball.bounceOff(edges)
-    ball.bounceOff(paddle)
-    for(let ii=0;ii<rows.length;ii++){
-        for(let i=0;i<rows[ii].length;i++){
-            ball.bounceOff(rows[ii][i], ()=>{
-                rows[ii][i].remove()
-                blocksleft--
-            })
+    }*/
+    for(let ball of balls)
+        ball.bounceOff(edges)
+        ball.bounceOff(paddle)
+        for(let balC of balls){
+            ball.bounceOff(ballC)
         }
+        for(let ii=0;ii<rows.length;ii++){
+            for(let i=0;i<rows[ii].length;i++){
+                ball.bounceOff(rows[ii][i], ()=>{
+                    rows[ii][i].remove()
+                    blocksleft--
+                })
+            }
     }
-    /*for(let i = 0;i<powerupSprites.length;i++){
+    for(let i = 0;i<powerupSprites.length;i++){
         paddle.collide(powerupSprites[i], ()=>{
             let sprite = powerupSprites[i]
             sprite.remove()
             if(sprite.type==='multiplicate'){
-
+                
             }
             if(sprite.type==='launchMore'){
 
             }
+            powerupSprites[i].remove()
             powerupSprites.splice(i, 1)
         })
-    }*/
+    }
     if(keyDown(LEFT_ARROW)&&!(paddle.x<55)&&!(cpuMode.checked())){
         paddle.x-=5*speedMultiplier
     }
@@ -111,6 +111,18 @@ let createBlockSprites=(y, w, h)=>{
         row.push(sprite)
     }
     return row
+}
+let createBall=(x, y)=>{
+    let ball
+    ball=createSprite(x, y, 10, 15)
+    ball.draw=()=>{
+        push()
+        fill(255)
+        ellipse(0, 0, 15)
+        pop()
+    }
+    ball.setCollider("circle", 0, 0, 20)
+    return ball
 }
 let createPowerupSprite =(type, x, y)=>{
     let powerupSprite
