@@ -1,32 +1,17 @@
-var edges, paddle, canvas, cpuMode, isTouching=false
-var rightKey; var leftKey
-var blocksleft=0
-var rows=[]
-var powerupSprites=[]
-var balls=[]
-var gameState=0
-var speedMultiplier=1
-var powerupList=[
-    'triplicate',
-    'launchMore',
-    'explotionBall',
-    'lengthenPaddle',
-    'shortenPaddle',
-    'finishLevel'
-]
-var ballBounceOff, powerupSound, explotionSound
+var edges, paddle, canvas, cpuMode, rightKey, leftKey, blocksleft=0, rows=[], powerupSprites=[], balls=[], gameState=0, speedMultiplier=1, ballBounceOff, powerupSound, explotionSound
+var gui
 
 let startGame=()=>{
     gameState=1
-        balls[0].velocityY=-4*speedMultiplier
-        balls[0].velocityX=random([-4, 4])*speedMultiplier
+        balls[0].velocityY=-4*speedMultiplier*(width/700)
+        balls[0].velocityX=random([-4, 4])*speedMultiplier*(height/700)
 }
 let createBlockSprites=(y, w, h)=>{
     let r=Math.round(random(0, 255))
     let g=Math.round(random(0, 255))
     let b=Math.round(random(0, 255))
     let row=new Group()
-    for(let x = 100;x<625;x+=60){
+    for(let x = width/50;x<width-(width/50);x+=width/20){
         let sprite = createSprite(x, y, w, h)
         blocksleft++
         sprite.draw=()=>{
@@ -57,18 +42,25 @@ let createBlockSprite=(x, y, w, h)=>{
 }
 let createBall=(x, y, vX, vY, type)=>{
     let ball, color
-    ball=createSprite(x, y, 10, 15)
+    ball=createSprite(x, y, 10, 15*(width/700))
     if(type==='normal'){
         color='white'
     }
     if(type==='explosive'){
         color='orange'
     }
-    ball.draw=()=>{
+    if(color){ball.draw=()=>{
         push()
         fill(color)
-        ellipse(0, 0, 15)
+        ellipse(0, 0, 15*(width/700))
         pop()
+    }}else{
+        ball.draw=()=>{
+            push()
+            fill(255)
+            ellipse(0, 0, 15*(width/700))
+            pop()
+        }
     }
     ball.setCollider('circle', 0, 0, 10)
     ball.velocityX=vX*speedMultiplier
@@ -248,7 +240,7 @@ let getDeviceType = () => {
     push()
     rectMode(CENTER)
     fill(0, 0, 255)
-    rect(paddle.x, paddle.y, paddle.width, 40)
+    rect(paddle.x, paddle.y, paddle.width, paddle.height)
     pop()
   }
 function preload(){
@@ -257,43 +249,15 @@ function preload(){
     explotionSound=loadSound('assets/y2mate.com - Retro Explosion Sound Effect.mp3')
 }
 function setup(){
-    cpuMode= createCheckbox('', false);
-    cpuMode.position(0, 0)
-    cpuMode.size(200, 200)
-    canvas=createCanvas(700, 700)
-    balls.push(createBall(200, height-40, 0, 0, 'normal'))
-    paddle=createSprite(200, height, 100, 40)
+    canvas=createCanvas(windowWidth, windowHeight)
+    gui=createGui()
+    cpuMode= createCheckbox('cpu mode', 0, 0, 20*(width/700), 20*(width/700));
+    paddle=createSprite(width/2, height, 100*(width/700), 40*(height/700))
+    balls.push(createBall(paddle.x, height-(height/20), 0, 0, 'normal'))
     paddle.draw=()=>{}
     edges=createEdgeSprites()
-    for(let y=100; y<=300; y+=40){
-    rows.push(createBlockSprites(y, 50, 25))
-    }
-    rightKey=createSprite(650, 50, 80, 80)
-    rightKey.draw=()=>{
-        push()
-        rectMode(CENTER)
-        fill('white')
-        rect(0, 0, 80, 80)
-        strokeWeight(7)
-        stroke(0)
-        line(-20, 0, 20, 0)
-        line(20, 0, 0,-20)
-        line(20, 0, 0, 20)
-        pop()
-    }
-    rightKey.debug=1
-    leftKey=createSprite(50, 50, 80, 80)
-    leftKey.draw=()=>{
-        push()
-        rectMode(CENTER)
-        fill('white')
-        rect(0, 0, 80, 80)
-        strokeWeight(7)
-        stroke(0)
-        line(-20, 0, 20, 0)
-        line(-20, 0, 0,-20)
-        line(-20, 0, 0,20)
-        pop()
+    for(let y=height/25; y<=height/2-(height/100); y+=height/20){
+    rows.push(createBlockSprites(y, 50*(height/700), 25*(height/700)))
     }
 }
     
@@ -304,36 +268,21 @@ function draw(){
     clear()
     background(0)
     //CPU mode will only follow the first ball in the array and doesn't have an AI, it will only follow the x position of the ball.
-    if(cpuMode.checked()&&!(balls[0]==null)){
+    if(cpuMode.val&&!(balls[0]==null)){
         if(gameState==0){
             startGame()
         }
         if(paddle.x>balls[0].x){
-            paddle.x-=6*speedMultiplier
+            paddle.x-=6*speedMultiplier*(width/700)
         }
         if(paddle.x<balls[0].x){
-            paddle.x+=6*speedMultiplier
+            paddle.x+=6*speedMultiplier*(width/700)
         }
     }
-    else if(cpuMode.checked()&&balls[0]==null){
+    else if(cpuMode.val&&balls[0]==null){
         location.reload()
     }
-    push()
-    textAlign(LEFT)
-    fill(255)
-    text('Enable CPU mode', 20, 14)
-    pop()
-    if(gameState==0){
-        balls[0].x=paddle.x
-        textAlign(CENTER)
-        push()
-        noStroke()
-        textSize(20)
-        fill(255)
-        text('To start press space and move width the right and arrow keys,', width/2, height/2-10)
-        text('or just enable CPU mode', width/2, height/2+15)
-        pop()
-    }
+    
     //Unused
     /*if(ball.y>height+10){
         gameState=2
@@ -460,31 +409,36 @@ function draw(){
         }
     }
     if(getDeviceType()=='desktop'){
-        if(keyDown(LEFT_ARROW)&&!(paddle.x<0)&&!(cpuMode.checked())){
-            paddle.x-=5*speedMultiplier
+        if(keyDown(LEFT_ARROW)&&!(paddle.x<0)&&!(cpuMode.val)){
+            paddle.x-=5*speedMultiplier*(width/700)
         }
-        if(keyDown(RIGHT_ARROW)&&!(paddle.x>width)&&!(cpuMode.checked())){
-            paddle.x+=5*speedMultiplier
+        if(keyDown(RIGHT_ARROW)&&!(paddle.x>width)&&!(cpuMode.val)){
+            paddle.x+=5*speedMultiplier*(width/700)
         }
-        if(keyDown('space')&&gameState==0&&!(cpuMode.checked())){
+        if(keyDown('space')&&gameState==0&&!(cpuMode.val)){
             startGame()
         }
-        rightKey.y=99999
-        leftKey.y=99999
-    }/*else{
-        rightKey.y=650
-        leftKey.y=650
-        if(checkButtonPressed(rightKey.x, rightKey.y, 80, 80)&&!(paddle.x>width-55)&&!(cpuMode.checked())){
-            paddle.x+=5*speedMultiplier
-            
-        }
-        console.log(/*checkButtonPressed(rightKey.x, rightKey.y, 80, 80)*//*isTouching);console.log(rightKey.x+' '+rightKey.y+' '+leftKey.x+' '+leftKey.y)
-        if(checkButtonPressed(leftKey.x, leftKey.y, 80, 80)&&!(paddle.x<55)&&!(cpuMode.checked())){
-            paddle.x-=5*speedMultiplier
-        }
-    }*/
-    drawPaddle()
+    }
     drawSprites()
+    drawPaddle()
+    drawGui()
+    push()
+    textAlign(LEFT)
+    fill(255)
+    textSize(width/100)
+    text('Enable CPU mode', cpuMode.w+(cpuMode.w/10), cpuMode.w/2)
+    pop()
+    if(gameState==0){
+        balls[0].x=paddle.x
+        textAlign(CENTER)
+        push()
+        noStroke()
+        textSize(width/100)
+        fill(255)
+        text('To start press space and move width the right and arrow keys,', width/2, height/2-(height/100))
+        text('or just enable CPU mode', width/2, height/2+(height/100))
+        pop()
+    }
 }
 let selectPowerup=()=>{
     let select=Math.floor(random(0, 100))
