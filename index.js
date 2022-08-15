@@ -509,7 +509,7 @@ function draw(){
     }
 }
 let selectPowerup=()=>{
-    let select=Math.floor(random(0, 100))
+    let select=random(0, 100)
     if(select>99){
         return 'levelFinish'
     }
