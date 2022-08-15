@@ -259,15 +259,13 @@ function preload(){
 function setup(){
     canvas=createCanvas(windowWidth, windowHeight)
     gui=createGui()
-    cpuMode= createCheckbox('cpu mode', 0, 0, 20*(width/700), 20*(width/700));Aña
+    cpuMode= createCheckbox('cpu mode', 0, 0, 20*(width/700), 20*(width/700));
     paddle=createSprite(width/2, height, 100*(width/500), 40*(height/1000))
     balls.push(createBall(paddle.x, height-(height/20), 0, 0, 'normal'))
     paddle.draw=()=>{}
     edges=createEdgeSprites()
-    for(let y=height/25; y<=height/2-(height/100); y+=height/20){
+    for(let y=height/25; y<=height/2-(height/100); y+=height/20)
         rows.push(createBlockSprites(y, 50*(width/1500), 25*(height/700)))
-    }
-    //Queres ver rhythm doctor?Avr pera
     leftKey=createButton("<", width/200, height-(height/100)-(50*height/700), 50*height/700, 50*height/700)
     rightKey=createButton(">", width-(width/200)-(50*height/700), height-(height/100)-(50*height/700), 50*height/700, 50*height/700)
     startKey=createButton('Start', width/4, height-(height/6), width/2, height/10)
@@ -278,12 +276,7 @@ function setup(){
     rightKey._style.strokeWeight=2*width/700 
     leftKey._style.strokeWeight=2*width/700
     cpuMode._style.strokeWeight=2*width/700
-    //speedMultiplierSlider=createCrossfader(width-width/4, height/500)
 }
-    
-    
-
-
 function draw(){
     clear()
     background(0)
@@ -537,8 +530,6 @@ let selectPowerup=()=>{
     }
 
 }
-//escribe aca 
-//Avr póngale Botones en teléfono 📱 hago eso noveo📖 
 /*let checkButtonPressed=(x, y, w, h)=>{
     if (touches[0] > x-(w/2) && touches[0] < x+(w/2) && touches[1] > y-(h/2) && touches[1] < y+(h/2) && isTouching) {
         return true; 
