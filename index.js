@@ -1,6 +1,5 @@
-var edges, paddle, canvas, cpuMode, rightKey, startKey, leftKey, blocksleft=0, rows=[], powerupSprites=[], balls=[], gameState=0, speedMultiplier=1, ballBounceOff, powerupSound, explotionSound
+var edges, paddle, canvas, cpuMode, rightKey, startKey, leftKey, speedMultiplierSlider, blocksleft=0, rows=[], powerupSprites=[], balls=[], gameState=0, speedMultiplier=1, ballBounceOff, powerupSound, explotionSound
 var gui
-
 let startGame=()=>{
     gameState=1
         balls[0].velocityY=-4*speedMultiplier*(height/700)
@@ -260,7 +259,7 @@ function preload(){
 function setup(){
     canvas=createCanvas(windowWidth, windowHeight)
     gui=createGui()
-    cpuMode= createCheckbox('cpu mode', 0, 0, 20*(width/700), 20*(width/700));
+    cpuMode= createCheckbox('cpu mode', 0, 0, 20*(width/700), 20*(width/700));Aña
     paddle=createSprite(width/2, height, 100*(width/500), 40*(height/1000))
     balls.push(createBall(paddle.x, height-(height/20), 0, 0, 'normal'))
     paddle.draw=()=>{}
@@ -268,6 +267,7 @@ function setup(){
     for(let y=height/25; y<=height/2-(height/100); y+=height/20){
         rows.push(createBlockSprites(y, 50*(width/1500), 25*(height/700)))
     }
+    //Queres ver rhythm doctor?Avr pera
     leftKey=createButton("<", width/200, height-(height/100)-(50*height/700), 50*height/700, 50*height/700)
     rightKey=createButton(">", width-(width/200)-(50*height/700), height-(height/100)-(50*height/700), 50*height/700, 50*height/700)
     startKey=createButton('Start', width/4, height-(height/6), width/2, height/10)
@@ -275,9 +275,10 @@ function setup(){
     rightKey._style.textSize=20*width/700
     startKey._style.textSize=20*width/700
     startKey._style.strokeWeight=2*width/700
-    rightKey._style.strokeWeight=2*width/700
+    rightKey._style.strokeWeight=2*width/700 
     leftKey._style.strokeWeight=2*width/700
     cpuMode._style.strokeWeight=2*width/700
+    //speedMultiplierSlider=createCrossfader(width-width/4, height/500)
 }
     
     
@@ -292,14 +293,29 @@ function draw(){
             startGame()
         }
         if(paddle.x>balls[0].x){
-            paddle.x-=6*speedMultiplier*(width/700)
+            paddle.x-=6*speedMultiplier*(width/500)
         }
         if(paddle.x<balls[0].x){
-            paddle.x+=6*speedMultiplier*(width/700)
+            paddle.x+=6*speedMultiplier*(width/500)
         }
     }
     else if(cpuMode.val&&balls[0]==null){
-        location.reload()
+        for(let e = 0;e<rows.length;e++){
+            for(let ee=0;ee<rows[e].length;ee++){
+                blocksleft--
+            }
+            rows[e].destroyEach()
+            rows[e].splice(e, 1)
+        }
+        paddle=createSprite(width/2, height, 100*(width/500), 40*(height/1000))
+        balls.push(createBall(paddle.x, height-(height/20), 0, 0, 'normal'))
+        paddle.draw=()=>{}
+        edges=createEdgeSprites()
+        for(let y=height/25; y<=height/2-(height/100); y+=height/20){
+            rows.push(createBlockSprites(y, 50*(width/1500), 25*(height/700)))
+        }
+        gameState=0
+        startGame()
     }
     
     //Unused
@@ -429,10 +445,10 @@ function draw(){
     }
     if(getDeviceType()=='desktop'){
         if(keyDown(LEFT_ARROW)&&!(paddle.x<0)&&!(cpuMode.val)){
-            paddle.x-=5*speedMultiplier*(width/700)
+            paddle.x-=4*speedMultiplier*(width/500)
         }
         if(keyDown(RIGHT_ARROW)&&!(paddle.x>width)&&!(cpuMode.val)){
-            paddle.x+=5*speedMultiplier*(width/700)
+            paddle.x+=5*speedMultiplier*(width/500)
         }
         if(keyDown('space')&&gameState==0&&!(cpuMode.val)){
             startGame()
@@ -445,10 +461,10 @@ function draw(){
     }
     if(getDeviceType()=='tablet'||getDeviceType()=='mobile'){
         if(leftKey.val&&!(paddle.x<0)&&!(cpuMode.val)){
-            paddle.x-=5*speedMultiplier*(width/700)
+            paddle.x-=4*speedMultiplier*(width/500)
         }
         if(rightKey.val&&!(paddle.x>width)&&!(cpuMode.val)){
-            paddle.x+=5*speedMultiplier*(width/700)
+            paddle.x+=4*speedMultiplier*(width/500)
         }
         if(startKey.val&&gameState==0&&!(cpuMode.val)){
             startGame()
@@ -521,6 +537,8 @@ let selectPowerup=()=>{
     }
 
 }
+//escribe aca 
+//Avr póngale Botones en teléfono 📱 hago eso noveo📖 
 /*let checkButtonPressed=(x, y, w, h)=>{
     if (touches[0] > x-(w/2) && touches[0] < x+(w/2) && touches[1] > y-(h/2) && touches[1] < y+(h/2) && isTouching) {
         return true; 
