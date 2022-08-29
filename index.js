@@ -1,5 +1,12 @@
 var edges, paddle, canvas, cpuMode, rightKey, startKey, leftKey, resetButton, speedMultiplierSlider, blocksleft = 0, rows = [], powerupSprites = [], balls = [], gameState = 0, speedMultiplier = 1, ballBounceOff, powerupSound, explotionSound
-var gui
+var gui, particles={
+    stars:{
+        particles:[],
+        defTunp:20,
+        tunp:20,
+        decay:10
+    }
+}
 let startGame = () => {
     gameState = 1
     balls[0].velocityY = -4 * speedMultiplier * (height / 700)
@@ -181,41 +188,20 @@ let createPowerupSprite = (type, x, y, i) => {
         }
     }
     //this one is more difficult because it uses stars
-    if (type === 'finishLevel') {
+    if (type === 'levelFinish') {
         powerupSprite = createSprite(x, y, 40, 40)
         powerupSprite.draw = () => {
             push()
+            if(particles.stars.tunp<=0){
+                new Particle(random(x-40 * (varPriority / 700), x+40 * (varPriority / 700)), powerupSprites[powerupSprites.indexOf(powerupSprite)].y, particles.stars.decay)
+                particles.stars.tunp=particles.stars.defTunp
+            }
             fill('gold')
             rectMode(CENTER)
             noStroke()
             rect(0, 0, 40 * (varPriority / 700))
             fill('white')
             rect(-3 * (varPriority / 700), 3 * (varPriority / 700), 50 / 3 * (varPriority / 700), 25 / 3 * (varPriority / 700))
-            let r1 = 2 * (varPriority / 700)
-            let r2 = 10 * (varPriority / 700)
-            translate(-20 * (varPriority / 700), -20 * (varPriority / 700))
-            beginShape();
-            vertex(0 - r1, 0 - r1);
-            vertex(0, 0 - r2)
-            vertex(r1, 0 - r1)
-            vertex(r2, 0)
-            vertex(r1, r1)
-            vertex(0, r2)
-            vertex(0 - r1, r1)
-            vertex(0 - r2, 0)
-            endShape();
-            translate(40 * (varPriority / 700), 40 * (varPriority / 700))
-            beginShape();
-            vertex(0 - r1, 0 - r1);
-            vertex(0, 0 - r2)
-            vertex(r1, 0 - r1)
-            vertex(r2, 0)
-            vertex(r1, r1)
-            vertex(0, r2)
-            vertex(0 - r1, r1)
-            vertex(0 - r2, 0)
-            endShape();
-            translate(-20 * (varPriority / 700), -20 * (varPriority / 700))
             fill('red')
             ellipse(3 * (varPriority / 700), -3 * (varPriority / 700), 15 * (varPriority / 700))
             fill('gold')
@@ -224,6 +210,7 @@ let createPowerupSprite = (type, x, y, i) => {
             strokeWeight(3 * (varPriority / 700))
             line(0, -8.5 * (varPriority / 700), 6 * (varPriority / 700), 2.5 * (varPriority / 700))
             pop()
+            particles.stars.tunp--
         }
     }
     if (powerupSprite) {
@@ -430,7 +417,7 @@ function draw() {
                                     ball.draw = () => {
                                         push()
                                         fill(255, 165, 0, alpha)
-                                        ellipse(0, 0, 100)
+                                        ellipse(0, 0, width/700)
                                         pop()
                                         alpha -= 10 * speedMultiplier
                                     }
@@ -473,7 +460,7 @@ function draw() {
                             paddle.width -= 10 * (width / 700)
                             setTimeout(() => { paddle.width += 10 * (width / 700) }, 10000 / speedMultiplier)
                         }
-                        if (sprite.type === 'finishLevel') {
+                        if (sprite.type === 'levelFinish') {
                             for (let e = 0; e < rows.length; e++) {
                                 for (let ee = 0; ee < rows[e].length; ee++) {
                                     blocksleft--
@@ -573,10 +560,13 @@ function draw() {
         text('Game Over', width / 2, height / 4)
         pop()
     }
+    for(let star of particles.stars.particles){
+        star.draw()
+    }
 }
 let selectPowerup = () => {
     let select = random(0, 100)
-    if (select > 99) {
+    if (select > 95) {
         return 'levelFinish'
     }
     else if (select > 75) {
