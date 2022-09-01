@@ -394,7 +394,7 @@ function draw() {
                     for (let row of rows) {
                         for (let block of row) {
                             ball.bounceOff(block, () => {
-                                if (random([1/*, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1*/])) {
+                                if (random([1, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1])) {
                                     createPowerupSprite(selectPowerup(), block.x, block.y, balls.indexOf(ball))
                                 }
                                 block.destroy()
@@ -448,7 +448,7 @@ function draw() {
                                             alpha -= 10 * speedMultiplier
                                         }
                                     })
-                                    setTimeout(() => { ball.destroy(); balls.splice(iii, 1); clearInterval(fade) }, 2000)
+                                    setTimeout(() => { ball.destroy(); balls.splice(balls.indexOf(ball), 1); clearInterval(fade) }, 2000)
                                 })
                             }
                         }
