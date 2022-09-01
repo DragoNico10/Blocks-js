@@ -303,18 +303,46 @@ function draw() {
     explotionSound.playbackRate=speedMultiplier
     background('rgba(0, 0, 0, 0.6)')
     //CPU mode will only follow the first ball in the array and doesn't have an AI, it will only follow the x position of the ball.
-    if (balls[0] == null && !cpuMode.val && gameState != 2) {
+    if (balls[0] == null && !cpuMode.val && gameState != 2&&gameState!=3) {
         gameState = 2
-        for (let e = 0; e < rows.length; e++) {
-            for (let ee = 0; ee < rows[e].length; ee++) {
+        for (let row of rows) {
+            for (let block of row) {
                 blocksleft--
             }
-            rows[e].destroyEach()
-            rows[e].splice(e, 1)
+            row.destroyEach()
+            rows.splice(rows.indexOf(row), 1)
         }
-        for (let i = 0; i < powerupSprites.length; i++) {
-            powerupSprites[i].destroy()
-            powerupSprites.splice(i, 1)
+        for (let sprite of powerupSprites) {
+            sprite.destroy()
+            powerupSprites.splice(powerupSprites.indexOf(sprite), 1)
+        }
+        paddle.destroy()
+        paddle = null
+        cpuMode.enabled = false
+        cpuMode.visible = false
+        leftKey.enabled = false
+        leftKey.visible = false
+        rightKey.enabled = false
+        rightKey.visible = false
+        resetButton.enabled = true
+        resetButton.visible = true
+    }
+    if (blocksleft==0 && !cpuMode.val && gameState != 2&&gameState!=3) {
+        gameState = 3
+        for (let row of rows) {
+            for (let block of row) {
+                blocksleft--
+            }
+            row.destroyEach()
+            rows.splice(rows.indexOf(row), 1)
+        }
+        for (let sprite of powerupSprites) {
+            sprite.remove()
+            powerupSprites.splice(powerupSprites.indexOf(sprite), 1)
+        }
+        for(let ball of balls){
+            ball.remove()
+            balls.splice(balls.indexOf(ball), 1)
         }
         paddle.destroy()
         paddle = null
@@ -356,74 +384,73 @@ function draw() {
         startGame()
     }
     if (gameState == 1) {
-        for (let iii = 0; iii < balls.length; iii++) {
-            if (balls[iii].type === 'normal') {
-                if (balls[iii].y > height + 5) {
-                    balls.splice(iii, 1)
-                    break
-                }
-                balls[iii].bounceOff(paddle, () => { ballBounceOff.play() })
-                balls[iii].bounceOff(edges, () => { ballBounceOff.play() })
-                for (let ii = 0; ii < rows.length; ii++) {
-                    for (let i = 0; i < rows[ii].length; i++) {
-                        balls[iii].bounceOff(rows[ii][i], () => {
-                            if (random([1, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1])) {
-                                createPowerupSprite(selectPowerup(), rows[ii][i].x, rows[ii][i].y, iii)
-                            }
-                            rows[ii][i].destroy()
-                            blocksleft--
-                            ballBounceOff.play()
-                        })
+        for (let ball of balls) {
+            if (ball.type === 'normal') {
+                if (ball.y > height + 5) {
+                    balls.splice(balls.indexOf(ball), 1)
+                }else{
+                    ball.bounceOff(paddle, () => { ballBounceOff.play() })
+                    ball.bounceOff(edges, () => { ballBounceOff.play() })
+                    for (let row of rows) {
+                        for (let block of row) {
+                            ball.bounceOff(block, () => {
+                                if (random([1/*, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1*/])) {
+                                    createPowerupSprite(selectPowerup(), block.x, block.y, balls.indexOf(ball))
+                                }
+                                block.destroy()
+                                blocksleft--
+                                ballBounceOff.play()
+                            })
+                        }
                     }
                 }
             }
-            if (balls[iii].type === 'explosive') {
-                if (balls[iii].y > height + 5) {
-                    balls.splice(iii, 1)
-                    break
-                }
-                balls[iii].bounceOff(paddle, () => { ballBounceOff.play() })
-                balls[iii].bounceOff(edges, () => { ballBounceOff.play() })
-                for (let ii = 0; ii < rows.length; ii++) {
-                    for (let i = 0; i < rows[ii].length; i++) {
-                        if (rows[ii][i]) {
-                            balls[iii].overlap(rows[ii][i], () => {
-                                let ball = balls[iii]
-                                explotionSound.play()
-                                ball.velocityX = 0
-                                ball.velocityY = 0
-                                ball.width = 100 * (width / 700)
-                                ball.height = 100 * (width / 700)
-                                ball.setCollider('circle', 0, 0, 50 * (width / 700))
-                                ball.draw = () => {
-                                    push()
-                                    fill('orange')
-                                    ellipse(0, 0, 100 * (width / 700))
-                                    pop()
-                                }
-                                for (let i = 0; i < rows.length; i++) {
-                                    for (let sprite of rows[i]) {
-                                        ball.overlap(sprite, () => {
-                                            if (random([1, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1])) {
-                                                createPowerupSprite(selectPowerup(), sprite.x, sprite.y, iii)
-                                            }
-                                            sprite.destroy()
-                                            blocksleft--
-                                        })
-                                    }
-                                }
-                                let alpha = 100
-                                fade = setInterval(() => {
+            if (ball.type === 'explosive') {
+                if (ball.y > height + 5) {
+                    balls.splice(balls.indexOf(ball), 1)
+                }else{
+                    ball.bounceOff(paddle, () => { ballBounceOff.play() })
+                    ball.bounceOff(edges, () => { ballBounceOff.play() })
+                    for (let row of rows) {
+                        for (let block of row) {
+                            if (block) {
+                                ball.overlap(block, () => {
+                                    explotionSound.play()
+                                    ball.velocityX = 0
+                                    ball.velocityY = 0
+                                    ball.width = 100 * (width / 700)
+                                    ball.height = 100 * (width / 700)
+                                    ball.setCollider('circle', 0, 0, 50 * (width / 700))
                                     ball.draw = () => {
                                         push()
-                                        fill(255, 165, 0, alpha)
-                                        ellipse(0, 0, width/700)
+                                        fill('orange')
+                                        ellipse(0, 0, 100 * (width / 700))
                                         pop()
-                                        alpha -= 10 * speedMultiplier
                                     }
+                                    for (let row of rows) {
+                                        for (let block of row) {
+                                            ball.overlap(block, () => {
+                                                if (random([1, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1])) {
+                                                    createPowerupSprite(selectPowerup(), block.x, block.y, balls.indexOf(ball))
+                                                }
+                                                block.destroy()
+                                                blocksleft--
+                                            })
+                                        }
+                                    }
+                                    let alpha = 100
+                                    fade = setInterval(() => {
+                                        ball.draw = () => {
+                                            push()
+                                            fill(255, 165, 0, alpha)
+                                            ellipse(0, 0, width/700)
+                                            pop()
+                                            alpha -= 10 * speedMultiplier
+                                        }
+                                    })
+                                    setTimeout(() => { ball.destroy(); balls.splice(iii, 1); clearInterval(fade) }, 2000)
                                 })
-                                setTimeout(() => { ball.destroy(); balls.splice(iii, 1); clearInterval(fade) }, 2000)
-                            })
+                            }
                         }
                     }
                 }
@@ -477,7 +504,7 @@ function draw() {
         }
     }
     if (getDeviceType() == 'desktop') {
-        if (gameState != 2) {
+        if (gameState != 2&&gameState!=3) {
             if (keyDown(LEFT_ARROW) && !(paddle.x < 0) && !(cpuMode.val)) {
                 paddle.x -= 5 * speedMultiplier * (width / 500)
             }
@@ -495,7 +522,7 @@ function draw() {
         rightKey.visible = false
     }
     if (getDeviceType() == 'tablet' || getDeviceType() == 'mobile') {
-        if (gameState != 2) {
+        if (gameState != 2&&gameState!=3) {
             if (leftKey.val && !(paddle.x < 0) && !(cpuMode.val) && paddle != null) {
                 paddle.x -= 5 * speedMultiplier * (width / 500)
             }
@@ -519,7 +546,7 @@ function draw() {
     if (paddle != null)
         drawPaddle()
     drawGui()
-    if (gameState != 2) {
+    if (gameState != 2&&gameState!=3) {
         push()
         textAlign(LEFT)
         fill(255)
@@ -560,13 +587,20 @@ function draw() {
         text('Game Over', width / 2, height / 4)
         pop()
     }
+    if (gameState == 3) {
+        push()
+        textAlign(CENTER)
+        textSize(width / 50)
+        text('You won!', width / 2, height / 4)
+        pop()
+    }
     for(let star of particles.stars.particles){
         star.draw()
     }
 }
 let selectPowerup = () => {
     let select = random(0, 100)
-    if (select > 95) {
+    if (select > 98) {
         return 'levelFinish'
     }
     else if (select > 75) {
